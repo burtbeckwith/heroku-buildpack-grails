@@ -134,9 +134,11 @@ echo "-----> Executing $COMPILECMD"
 eval "$COMPILECMD" | sed -u 's/^/       /'
 check_build_status
 
-GRAILS_ENV=$(get_property $BUILD_DIR/heroku-build.properties 'grails.env')
+if [ -f $BUILD_DIR/heroku-build.properties ] ; then
+   GRAILS_ENV=$(get_property $BUILD_DIR/heroku-build.properties 'grails.env')
+fi
 if [ -z "$GRAILS_ENV" ] ; then
-    GRAILS_ENV='production'
+   GRAILS_ENV='production'
 fi
 
 BUILDCMD="$GRAILS_CMD -Dgrails.env=$GRAILS_ENV $BUILDCMD_OPT -Divy.default.ivy.user.dir=$CACHE_DIR build-standalone target/heroku-standalone.jar --non-interactive"
