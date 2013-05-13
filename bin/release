@@ -3,6 +3,15 @@
 
 BUILD_DIR=$1
 
+if [ -f $BUILD_DIR/heroku-build.properties ] ; then
+   DEPLOY_MODE=$(get_property $BUILD_DIR/heroku-build.properties 'deploy.mode')
+fi
+if [ "$DEPLOY_MODE" == "war-jetty" ] ; then
+   JAR_ARGS="server/jetty-runner.jar --port \$PORT target/*.war"
+else
+   JAR_ARGS="target/heroku-standalone.jar port=\$PORT workDir=home.dir"
+fi
+
 cat <<EOF
 ---
 config_vars:
@@ -12,6 +21,6 @@ addons:
   heroku-postgresql:dev
 
 default_process_types:
-  web:      java \$JAVA_OPTS -jar target/heroku-standalone.jar port=\$PORT workDir=home.dir
+  web:      java \$JAVA_OPTS -jar $JAR_ARGS
 
 EOF
