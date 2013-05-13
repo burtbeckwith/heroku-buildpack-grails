@@ -135,16 +135,43 @@ eval "$COMPILECMD" | sed -u 's/^/       /'
 check_build_status
 
 if [ -f $BUILD_DIR/heroku-build.properties ] ; then
+   DEPLOY_MODE=$(get_property $BUILD_DIR/heroku-build.properties 'deploy.mode')
    GRAILS_ENV=$(get_property $BUILD_DIR/heroku-build.properties 'grails.env')
 fi
 if [ -z "$GRAILS_ENV" ] ; then
    GRAILS_ENV='production'
 fi
 
-BUILDCMD="$GRAILS_CMD -Dgrails.env=$GRAILS_ENV $BUILDCMD_OPT -Divy.default.ivy.user.dir=$CACHE_DIR build-standalone target/heroku-standalone.jar --non-interactive"
+if [ "$DEPLOY_MODE" == "war-jetty" ] ; then
+   BUILD_ACTION="war"
+elif [ "$DEPLOY_MODE" == "standalone-jetty" ] ; then
+   BUILD_ACTION="build-standalone target/heroku-standalone.jar --jetty"
+else
+   BUILD_ACTION="build-standalone target/heroku-standalone.jar --tomcat"
+fi
+
+BUILDCMD="$GRAILS_CMD -Dgrails.env=$GRAILS_ENV $BUILDCMD_OPT -Divy.default.ivy.user.dir=$CACHE_DIR $BUILD_ACTION --non-interactive"
 echo "-----> Executing $BUILDCMD"
 eval "$BUILDCMD" | sed -u 's/^/       /'
 check_build_status
+
+if [ "$DEPLOY_MODE" == "war-jetty" ] ; then
+   if [ ! -d server ] ; then
+      SERVLET_VERSION=$(get_property $BUILD_DIR/grails-app/conf/BuildConfig.groovy 'grails.servlet.version')
+
+      if [ "$SERVLET_VERSION" == '3.0' ]; then
+         JETTY_RUNNER_VERSION=8.1.10.v20130312
+      else
+         JETTY_RUNNER_VERSION=7.5.4.v20111024
+      fi
+
+      echo "-----> No server directory found. Adding jetty-runner $JETTY_RUNNER_VERSION automatically."
+      mkdir server
+      curl -fs http://s3pository.heroku.com/maven-central/org/mortbay/jetty/jetty-runner/$JETTY_RUNNER_VERSION/jetty-runner-$JETTY_RUNNER_VERSION.jar > server/jetty-runner.jar    
+      echo "vendored:$JETTY_RUNNER_VERSION" > server/jettyVersion
+      echo "vendored:$JETTY_RUNNER_VERSION" > $CACHE_DIR/jettyVersion
+   fi
+fi
 
 PROFILE_PATH="$BUILD_DIR/.profile.d/grails.sh"
 mkdir -p $(dirname $PROFILE_PATH)
