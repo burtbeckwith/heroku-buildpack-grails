@@ -3,6 +3,7 @@
 
 BUILD_DIR=$1
 
+BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 # source in common functions
 . $BIN_DIR/common.sh
 
