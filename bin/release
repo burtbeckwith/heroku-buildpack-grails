@@ -25,6 +25,6 @@ addons:
   heroku-postgresql:dev
 
 default_process_types:
-  web:      java \$JAVA_OPTS -jar \$JAR_ARGS
+  web:      java \$JAVA_OPTS -jar $JAR_ARGS
 
 EOF
