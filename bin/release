@@ -3,6 +3,9 @@
 
 BUILD_DIR=$1
 
+# source in common functions
+. $BIN_DIR/common.sh
+
 if [ -f $BUILD_DIR/heroku-build.properties ] ; then
    DEPLOY_MODE=$(get_property $BUILD_DIR/heroku-build.properties 'deploy.mode')
 fi
