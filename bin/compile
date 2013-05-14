@@ -170,14 +170,9 @@ if [ "$DEPLOY_MODE" == "war-jetty" ] ; then
       curl -fs http://s3pository.heroku.com/maven-central/org/mortbay/jetty/jetty-runner/$JETTY_RUNNER_VERSION/jetty-runner-$JETTY_RUNNER_VERSION.jar > server/jetty-runner.jar    
       echo "vendored:$JETTY_RUNNER_VERSION" > server/jettyVersion
       echo "vendored:$JETTY_RUNNER_VERSION" > $CACHE_DIR/jettyVersion
-		echo "-----> Downloaded jetty-runner $JETTY_RUNNER_VERSION"
    fi
 fi
-
-echo "-----> Configuring profile"
 
 PROFILE_PATH="$BUILD_DIR/.profile.d/grails.sh"
 mkdir -p $(dirname $PROFILE_PATH)
 echo 'export PATH="/app/.jdk/bin:$PATH"' >> $PROFILE_PATH
-
-echo "-----> Compile OK"
